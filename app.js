@@ -9,6 +9,7 @@ const ExpressError = require('./utils/ExpressError');
 //web只有get和post所以用put和其他的用来伪装post来实现修改
 const methodOverride = require("method-override");
 const Campground = require("./models/campground");
+const Review = require('./models/review.js');
 
 mongoose.connect("mongodb://127.0.0.1:27017/yelp-camp", {
   useNewUrlParser: true,
@@ -95,6 +96,15 @@ app.delete("/campgrounds/:id", catchAsync(async (req, res) => {
   await Campground.findByIdAndDelete(id);
   res.redirect("/campgrounds");
 }));
+
+app.post('/campgrounds/:id/reviews', catchAsync(async(req,res) => {
+  const campground = await Campground.findById(req.params.id);
+  const review = new Review(req.body.review);
+  campground.reviews.push(review);
+  await review.save();
+  await campground.save();
+  res.redirect(`/campgrounds/${campground._id}`);
+}))
 
 app.all('*', (req,res,next) => {
   next(new ExpressError('Page Not Found', 404))
