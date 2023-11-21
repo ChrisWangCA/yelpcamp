@@ -1,9 +1,8 @@
-<% layout('layouts/boilerplate') %>
-
+<% layout('layouts/boilerplate')%>
 <div class="row">
   <h1 class="text-center">New Campground</h1>
   <div class="col-6 offset-3">
-    <form action="/campgrounds" method="POST">
+    <form action="/campgrounds" method="POST" novalidate class="validated-form">
       <div class="mb-3">
         <label class="form-label" for="title">Title</label>
         <input
@@ -11,9 +10,10 @@
           type="text"
           id="title"
           name="campground[title]"
+          required
         />
+        <div class="valid-feedback">Looks good!</div>
       </div>
-
       <div class="mb-3">
         <label class="form-label" for="location">Location</label>
         <input
@@ -21,19 +21,21 @@
           type="text"
           id="location"
           name="campground[location]"
+          required
         />
+        <div class="valid-feedback">Looks good!</div>
       </div>
-
       <div class="mb-3">
-        <label class="form-label" for="image">ImageURL</label>
+        <label class="form-label" for="image">Image Url</label>
         <input
           class="form-control"
           type="text"
           id="image"
           name="campground[image]"
+          required
         />
+        <div class="valid-feedback">Looks good!</div>
       </div>
-
       <div class="mb-3">
         <label class="form-label" for="price">Campground Price</label>
         <div class="input-group">
@@ -42,12 +44,14 @@
             type="text"
             class="form-control"
             id="price"
-            name="campgrounds[price]"
             placeholder="0.00"
             aria-label="price"
             aria-describedby="price-label"
+            name="campground[price]"
+            required
           />
         </div>
+        <div class="valid-feedback">Looks good!</div>
       </div>
 
       <div class="mb-3">
@@ -57,15 +61,14 @@
           type="text"
           id="description"
           name="campground[description]"
-        >
-        </textarea>
+          required
+        ></textarea>
+        <div class="valid-feedback">Looks good!</div>
       </div>
-
       <div class="mb-3">
-        <button class="btn btn-success">Add campground</button>
+        <button class="btn btn-success">Add Campground</button>
       </div>
     </form>
-
-    <a href="/campgrounds">All campgrounds</a>
+    <a href="/campgrounds">All Campgrounds</a>
   </div>
 </div>
