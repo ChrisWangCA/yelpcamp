@@ -2,6 +2,8 @@ const express = require("express");
 const path = require("path");
 const mongoose = require("mongoose");
 const ejsMate = require("ejs-mate");
+const session = require('express-session');
+const flash = require('connect-flash');
 const Joi = require("joi");
 const { campgroundSchema, reviewSchema } = require("./schemas.js");
 const catchAsync = require("./utils/catchAsync");
@@ -15,8 +17,8 @@ const campgrounds = require("./routes/campgrounds.js");
 const reviews = require("./routes/reviews.js");
 
 mongoose.connect("mongodb://127.0.0.1:27017/yelp-camp", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+  // useNewUrlParser: true,
+  // useUnifiedTopology: true,
 });
 
 const db = mongoose.connection;
@@ -34,6 +36,25 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, 'public')));
+
+const sessionConfig = {
+  secret: 'thisshouldbebettersecret',
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    httpOnly: true,
+    expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
+    maxAge:1000 * 60 * 60 * 24 * 7
+  }
+}
+app.use(session(sessionConfig));
+app.use(flash());
+
+app.use((req,res,next) => {
+  res.locals.success = req.flash('success');
+  res.locals.error = req.flash('error');
+  next();
+})
 
 const validateCampground = (req, res, next) => {
   const { error } = campgroundSchema.validate(req.body);
