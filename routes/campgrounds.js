@@ -4,17 +4,9 @@ const catchAsync = require("../utils/catchAsync");
 const ExpressError = require("../utils/ExpressError");
 const Campground = require("../models/campground");
 const { campgroundSchema } = require("../schemas.js");
-const { isLoggedIn } = require("../middleware");
+const { isLoggedIn, isAuthor, validateCampground } = require("../middleware");
 
-const validateCampground = (req, res, next) => {
-  const { error } = campgroundSchema.validate(req.body);
-  if (error) {
-    const msg = error.details.map((el) => el.message).join(",");
-    throw new ExpressError(msg, 400);
-  } else {
-    next();
-  }
-};
+
 
 router.get("/", async (req, res) => {
   const campgrounds = await Campground.find({});
@@ -47,7 +39,15 @@ router.get(
   "/:id",
   catchAsync(async (req, res) => {
     const campground = await Campground.findById(req.params.id)
-      .populate("reviews")
+      .populate(
+        {
+          //得到reviews里面的author 和 campground不同
+          path: 'reviews',
+          populate: {
+            path: 'author'
+          }
+        }
+      )
       .populate("author");
     if (!campground) {
       req.flash("error", "Cannot find that campground");
@@ -59,7 +59,7 @@ router.get(
 
 router.get(
   "/:id/edit",
-  isLoggedIn,
+  isLoggedIn, isAuthor,
   catchAsync(async (req, res) => {
     const campground = await Campground.findById(req.params.id);
     if (!campground) {
@@ -72,7 +72,7 @@ router.get(
 
 router.put(
   "/:id",
-  isLoggedIn,
+  isLoggedIn, isAuthor,
   validateCampground,
   catchAsync(async (req, res) => {
     const { id } = req.params;
@@ -93,7 +93,7 @@ router.put(
 
 router.delete(
   "/:id",
-  isLoggedIn,
+  isLoggedIn, isAuthor,
   catchAsync(async (req, res) => {
     const { id } = req.params;
     await Campground.findByIdAndDelete(id);
