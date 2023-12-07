@@ -1,4 +1,5 @@
 const Campground = require('../models/campground');
+const { cloudinary } = require('../cloudinary');
 
 module.exports.index = async (req, res) => {
     const campgrounds = await Campground.find({});
@@ -16,8 +17,10 @@ module.exports.createCampground = async (req, res) => {
     // if(!req.body.campground) throw new ExpressError('Invalid Campground Data',400);
 
     const campground = new Campground(req.body.campground);
+    campground.images = req.files.map(f => ({url: f.path,filename: f.filename}))
     campground.author = req.user._id;
     await campground.save();
+    console.log(campground);
     req.flash("success", "Successfully made a new campground!");
     res.redirect(`/campgrounds/${campground._id}`);
   }
@@ -52,6 +55,7 @@ module.exports.renderEditForm = async (req, res) => {
 
 module.exports.updateCampground = async (req, res) => {
     const { id } = req.params;
+
     /*
       在这里，... 是 JavaScript 中的扩展运算符（Spread Operator）。
       它用于展开对象或数组，将对象的属性复制到另一个对象中，或者将数组的元素复制到另一个数组中。
@@ -62,6 +66,15 @@ module.exports.updateCampground = async (req, res) => {
     const campground = await Campground.findByIdAndUpdate(id, {
       ...req.body.campground,
     });
+    const imgs = req.files.map(f => ({url: f.path,filename: f.filename}));
+    campground.images.push(...imgs);
+    await campground.save();
+    if(req.body.deleteImages){
+      for(let filename of req.body.deleteImages){
+        await cloudinary.uploader.destroy(filename);
+      }
+      await campground.updateOne({$pull: {images: {filename: {$in: req.body.deleteImages}}}})
+    }
     req.flash("success", "Successfully updated campground");
     res.redirect(`/campgrounds/${campground._id}`);
   }

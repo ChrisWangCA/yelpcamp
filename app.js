@@ -1,3 +1,9 @@
+// 如果环境是production mode 不是development mode 它会去.env文件添加到process的dotenv添加到node app
+if(process.env.NODE_ENV != 'production'){
+  require('dotenv').config();
+}
+
+
 const express = require("express");
 const path = require("path");
 const mongoose = require("mongoose");
